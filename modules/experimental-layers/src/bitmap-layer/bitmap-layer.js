@@ -21,7 +21,8 @@
 /* global Image, HTMLCanvasElement */
 import GL from '@luma.gl/constants';
 import {Layer} from '@deck.gl/core';
-import {Model, Geometry, Texture2D, fp64, loadTextures} from 'luma.gl';
+import {Model, Geometry, Texture2D, fp64} from 'luma.gl';
+import {loadImage} from '@loaders.gl/core';
 
 const {fp64LowPart} = fp64;
 
@@ -88,7 +89,7 @@ export default class BitmapLayer extends Layer {
     }
 
     if (props.image !== oldProps.image) {
-      this.loadImage();
+      this.loadTexture();
     }
 
     const attributeManager = this.getAttributeManager();
@@ -185,15 +186,13 @@ export default class BitmapLayer extends Layer {
     }
   }
 
-  loadImage() {
+  loadTexture() {
     const {gl} = this.context;
     const {image} = this.props;
 
     if (typeof image === 'string') {
-      loadTextures(this.context.gl, {
-        urls: [image]
-      }).then(([texture]) => {
-        this.setState({bitmapTexture: texture});
+      loadImage(image).then(data => {
+        this.setState({bitmapTexture: new Texture2D(gl, {data})});
       });
     } else if (image instanceof Texture2D) {
       this.setState({bitmapTexture: image});
